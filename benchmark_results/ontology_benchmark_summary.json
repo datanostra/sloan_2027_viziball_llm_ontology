@@ -1,0 +1,18 @@
+{
+  "games": 3,
+  "questions": 74,
+  "instances": 222,
+  "semantic_pass": 214,
+  "ontology_pass": 222,
+  "end_to_end_pass": 214,
+  "parsing_errors": 0,
+  "semantic_errors": 8,
+  "ontology_errors": 0,
+  "end_to_end_errors": 8,
+  "semantic_accuracy": 0.963963963963964,
+  "ontology_accuracy": 1.0,
+  "end_to_end_accuracy": 0.963963963963964,
+  "error_distribution": {
+    "OPERATION_ERROR": 8
+  }
+}

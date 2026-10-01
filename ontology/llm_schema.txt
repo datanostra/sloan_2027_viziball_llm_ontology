@@ -1,0 +1,207 @@
+PREFIX vz: <https://viziball.io/ontology/>
+PREFIX team: <https://viziball.io/resource/team/>
+PREFIX player: <https://viziball.io/resource/player/>
+PREFIX game: <https://viziball.io/resource/game/>
+PREFIX possession: <https://viziball.io/resource/possession/>
+PREFIX lineup: <https://viziball.io/resource/lineup/>
+PREFIX event: <https://viziball.io/resource/event/>
+
+The Viziball RDF knowledge graph represents basketball games
+at possession, lineup, player and event level.
+
+CLASSES
+
+vz:Game
+vz:Possession
+vz:Lineup
+vz:Team
+vz:Player
+vz:Event
+
+
+RELATIONSHIPS
+
+Game:
+    vz:hasPossession -> Possession
+
+Possession:
+    vz:offensiveTeam -> Team
+    vz:defensiveTeam -> Team
+    vz:offensiveLineup -> Lineup
+    vz:defensiveLineup -> Lineup
+    vz:hasEvent -> Event
+
+Lineup:
+    vz:hasPlayer -> Player
+
+Event:
+    vz:team -> Team
+    vz:shooter -> Player
+    vz:assistedBy -> Player
+    vz:turnoverBy -> Player
+    vz:stolenBy -> Player
+    vz:rebounder -> Player
+    vz:foulBy -> Player
+    vz:blockedBy -> Player
+
+
+DATA PROPERTIES
+
+Player:
+    vz:playerId
+    vz:firstName
+    vz:lastName
+    vz:displayName
+
+Possession:
+    vz:possessionNumber
+    vz:startSecond
+    vz:endSecond
+    vz:endReason
+
+Event:
+    vz:eventType
+    vz:second
+
+
+ENTITY RESOLUTION
+
+Player names MUST be resolved from the knowledge graph.
+
+When the user identifies a player by name, NEVER infer or guess
+a player ID from prior knowledge or from an external database.
+
+Resolve the player using vz:displayName.
+
+Example:
+
+?subjectPlayer a vz:Player ;
+               vz:displayName "Josh Hart" .
+
+?comparisonPlayer a vz:Player ;
+                  vz:displayName "OG Anunoby" .
+
+Then use ?subjectPlayer and ?comparisonPlayer throughout the query.
+
+Do NOT generate player:<id> when the user supplied only a player name.
+
+A player:<id> resource may only be used directly when the user
+explicitly supplied a Viziball player ID.
+
+SPARQL COMPATIBILITY
+
+The SPARQL query will be executed using RDFLib.
+
+Do NOT use EXISTS or NOT EXISTS inside aggregate expressions such as:
+
+SUM(...)
+COUNT(...)
+AVG(...)
+MIN(...)
+MAX(...)
+
+Do NOT use EXISTS inside IF expressions used by aggregates.
+
+Instead, bind event-player relationships explicitly in the WHERE clause.
+
+For example, prefer:
+
+OPTIONAL {
+    ?possession vz:hasEvent ?shotEvent .
+    ?shotEvent vz:shooter ?subjectPlayer ;
+               vz:eventType ?shotType .
+}
+
+and aggregate the bound variables.
+
+Use BOUND(?variable) when necessary to determine whether an OPTIONAL
+pattern matched.
+
+PLAYER ON/OFF ANALYSIS
+
+When comparing a subject player's performance based on whether another
+player is ON or OFF the court:
+
+1. Only include possessions where the subject player is on the court.
+
+2. The subject player may appear in either the offensive lineup or the
+   defensive lineup.
+
+3. Determine ON/OFF status of the comparison player from the lineup
+   corresponding to the same team as the subject player.
+
+4. Do not count possessions where the subject player is not on the court.
+
+5. Player statistics must only be computed from events explicitly
+   involving the subject player in the appropriate event role.
+
+ON/OFF STATUS
+
+When determining whether a comparison player is present in a lineup,
+do NOT use BOUND() on the comparison player variable itself if that
+variable has already been resolved by name.
+
+Incorrect:
+
+?comparison a vz:Player ;
+            vz:displayName "OG Anunoby" .
+
+OPTIONAL {
+    ?lineup vz:hasPlayer ?comparison .
+}
+
+BIND(IF(BOUND(?comparison), "ON", "OFF") AS ?status)
+
+The variable ?comparison is already bound and therefore this test
+will always return ON.
+
+Instead, introduce a separate lineup membership variable:
+
+OPTIONAL {
+    ?lineup vz:hasPlayer ?comparisonInLineup .
+    FILTER(?comparisonInLineup = ?comparison)
+}
+
+BIND(
+    IF(BOUND(?comparisonInLineup), "ON", "OFF")
+    AS ?status
+)
+
+
+RESOURCE URI PATTERNS
+
+Teams:
+https://viziball.io/resource/team/{team_id}
+
+Players:
+https://viziball.io/resource/player/{player_id}
+
+Games:
+https://viziball.io/resource/game/{game_id}
+
+Possessions:
+https://viziball.io/resource/possession/{game_id}/{possession_id}
+
+Lineups:
+https://viziball.io/resource/lineup/{lineup_id}
+
+Events:
+https://viziball.io/resource/event/{game_id}/{possession_id}/{event_index}
+
+
+EVENT TYPES
+
+TWO_PT_MADE
+TWO_PT_MISSED
+THREE_PT_MADE
+THREE_PT_MISSED
+FT_MADE
+FT_MISSED
+TURNOVER
+OFF_REBOUND
+DEF_REBOUND
+SHOOTING_FOUL
+PERSONAL_FOUL
+DEFENSIVE_FOUL
+OFFENSIVE_FOUL
+TECHNICAL_FOUL
