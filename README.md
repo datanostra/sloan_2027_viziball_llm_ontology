@@ -353,45 +353,6 @@ NEO4J_URI = os.environ["NEO4J_URI"]
 NEO4J_USER = os.environ["NEO4J_USER"]
 NEO4J_PASSWORD = os.environ["NEO4J_PASSWORD"]
 ```
-
-## Database permissions
-
-For reproducibility and security, the benchmark should use a **read-only Neo4j account**.
-
-The benchmark does not require write access to the source basketball database.
-
-A Neo4j administrator can configure a dedicated role, for example:
-
-```cypher
-CREATE ROLE sloan_reader_role;
-```
-
-Grant access to the basketball database:
-
-```cypher
-GRANT ACCESS ON DATABASE BCL
-TO sloan_reader_role;
-```
-
-Grant graph read permissions:
-
-```cypher
-GRANT MATCH {*}
-ON GRAPH BCL
-TO sloan_reader_role;
-```
-
-Then assign the role to the benchmark user:
-
-```cypher
-GRANT ROLE sloan_reader_role
-TO sloan_reader;
-```
-
-The exact administration syntax may depend on the Neo4j version and edition.
-
----
-
 ## Security
 
 Never commit `.env` to Git.
