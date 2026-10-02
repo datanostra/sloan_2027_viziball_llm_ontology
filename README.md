@@ -1,6 +1,84 @@
 # From Play-by-Play to Semantic Analytics
-
 ## A Possession-Based Basketball Ontology for LLM Question Answering
+
+**Guillaume Blot, PhD**  
+Founder — [Viziball](https://viziball.app), Basketball Analytics  
+CEO — Data Nostra  
+📧 gblot@datanostra.ai
+
+---
+
+### Benchmark Data Access
+
+The benchmark relies on the **Viziball Neo4j instance**, which hosts the Basketball Champions League data required to reconstruct and analyze the games.
+
+The source code, ontology, benchmark questions, and experimental results are publicly available in this repository. However, running the complete benchmark requires **read-only credentials to the Viziball Neo4j instance**.
+
+For research, review, or benchmark reproduction purposes, please contact:
+
+**Guillaume Blot — gblot@datanostra.ai**
+
+Access can be provided upon request when appropriate.
+
+## Key Result
+
+> **97.36% end-to-end accuracy** across 16,562 question-game instances.
+
+The benchmark covers **175 Basketball Champions League games** and
+**100 natural-language analytical questions**.
+
+All 437 observed failures occurred at the **semantic interpretation stage**
+and were concentrated in only **3 deliberately ambiguous questions**.
+Ontology execution matched the independently computed procedural ground
+truth on all 16,562 evaluated instances.
+
+## Architecture
+
+![Ontology-grounded architecture for natural-language basketball analytics](figures/ontology_llm_architecture.png)
+
+*Figure 1. Ontology-grounded architecture for natural-language basketball
+analytics. BCL play-by-play data are reconstructed into possessions and
+semantically enriched through a possession-based basketball ontology.
+The LLM maps natural-language questions to ontology concepts, which trigger
+deterministic retrieval from the RDF Knowledge Graph. The resulting grounded
+analytical context is returned to the LLM for natural-language answer generation.*
+
+## Results
+
+| Metric | Result |
+|---|---:|
+| Games evaluated | 175 |
+| Benchmark questions | 100 |
+| Question-game instances | 16,562 |
+| End-to-end correct | 16,125 |
+| End-to-end accuracy | **97.36%** |
+| Ontology execution correct | **16,562 / 16,562** |
+| Questions responsible for all failures | **3 / 100** |
+
+### Accuracy by linguistic formulation
+
+| Formulation | Correct | Total | Accuracy |
+|---|---:|---:|---:|
+| Direct | 4,550 | 4,550 | **100%** |
+| Paraphrase | 9,072 | 9,072 | **100%** |
+| Implicit | 1,974 | 1,974 | **100%** |
+| Ambiguous | 529 | 966 | **54.76%** |
+
+### Error analysis
+
+All 437 failures came from three deliberately ambiguous questions:
+
+- `ONT_057` — *How often did a team score during clutch possessions?*
+- `ONT_060` — *How often did the offense give the ball away after starting the possession ahead?*
+- `ONT_061` — *How often did teams score when the margin was within one possession?*
+
+In all three cases, the relevant basketball concepts were identified, but
+the expression **"how often"** was interpreted as `RATIO` instead of the
+expected `COUNT`.
+
+This suggests that the observed limitation lies in **linguistic operator
+interpretation rather than basketball concept composition or deterministic
+graph execution**.
 
 This repository contains the experimental pipeline and benchmark associated with the research project:
 
